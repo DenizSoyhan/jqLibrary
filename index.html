@@ -9,7 +9,31 @@
 </head>
 <body>
     <H1 id="siteName">jqLibrary</H1>
+    <div id="loader">
+        <div class="spinner"></div>
+        <p>Loading books…</p>
+      </div>
     <div id="bookCase"></div>
+
+    <!-- modal for details -->
+    <div id="bookModal" class="modal hidden">
+        <div class="modal-overlay"></div>
+      
+        <div class="modal-content">
+          <button class="modal-close">&times;</button>
+      
+          <div class="modal-body">
+            <img id="modalCover" src="" alt="Book cover">
+            <div class="modal-text">
+              <h2 id="modalTitle"></h2>
+              <p id="modalAuthor"></p>
+              <p id="modalYear"></p>
+              <p id="modalDescription"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
 
 </body>
 <script src="node_modules/jquery/dist/jquery.js" type="text/javascript"></script>
