@@ -34,38 +34,49 @@ $.getJSON(
 
   })
 
-  function createShelfElements(aBookList){
+function createShelfElements(aBookList) {
+  let index = 0;
+  let shelfIndex = 0;
 
+  while (index < aBookList.length) {
 
-    for(let i = 0; i < (aBookList.length/3) ;i++){
-      const shelf = $("<div>").addClass("shelf");
-      $("#bookCase").append(
-        shelf
-      )
+    if (shelfIndex === 0) {
+      $("#bookCase").append(`<h2 class="section-title">Most Popular</h2>`);
     }
-    let listOfShelves = document.querySelectorAll(".shelf");
-    
-    createBookElements(listOfShelves,aBookList);
 
-    
-    
-    
+    if (shelfIndex === 1) {
+      $("#bookCase").append(`<h2 class="section-title">The Classics</h2>`);
+    }
+
+    const shelf = $("<div>").addClass("shelf");
+    $("#bookCase").append(shelf);
+
+    index += 3;
+    shelfIndex++;
   }
 
+  const shelves = document.querySelectorAll(".shelf");
+  createBookElements(shelves, aBookList);
+  }
 function createBookElements(shelves, books) {
   let bookIndex = 0;
 
   shelves.forEach(shelf => {
     for (let i = 0; i < 3 && bookIndex < books.length; i++) {
       const book = books[bookIndex++];
-
+    
       const coverUrl = book.coverKey
         ? `https://covers.openlibrary.org/b/olid/${book.coverKey}-L.jpg`
         : "/images/placeHolder.png";
 
         //data index is there to easily choose what book to choose for the details modal
       shelf.insertAdjacentHTML("beforeend", `
-         <div class="book" data-index="${bookIndex - 1}"> 
+          <div class="book" data-index="${bookIndex - 1}" data-workid="${book.workId}">
+    
+          <button class="fav-btn" title="Add to favorites">
+            <i class="fa-regular fa-heart"></i>
+          </button>
+         
           <img src="${coverUrl}" onerror="this.src='/images/placeHolder.png'">
           <h4>${book.title}</h4>
           <p>${book.author} (${book.year ?? "N/A"})</p>
@@ -92,12 +103,21 @@ function getBookDescription(book) {
 
 }
 
+//FAV button logic
+
+$(document).on("click", ".fav-btn", function (e) {
+  e.stopPropagation(); // prevents opening modal I can't be bothered for another solution
+
+  const workId = $(this).closest(".book").data("workid");
+  console.log("Favorite clicked:", workId);
+
+  // TODO: add fav button logic and use local storage 
+
+});
+
 //MODAL LOGIC
 
-$(document).on("click", ".book", function () {
-  const index = $(this).data("index");
-  const book = bookList[index];
-
+function openBookModal(book, index) {
   const coverUrl = book.coverKey
     ? `https://covers.openlibrary.org/b/olid/${book.coverKey}-L.jpg`
     : "/images/placeHolder.png";
@@ -106,13 +126,27 @@ $(document).on("click", ".book", function () {
   $("#modalTitle").text(book.title);
   $("#modalAuthor").text(`by ${book.author}`);
   $("#modalYear").text(book.year ? `Published: ${book.year}` : "");
-  $("#modalDescription").text(book.description || "Loading description…");
+  $("#bookModal").data("index", index);
 
   $("#modalDescription").text(
-    truncate(book.description, 900)
+    book.description
+      ? truncate(book.description, 900)
+      : "Loading description…"
   );
-  
-  $("#bookModal").removeClass("hidden");
+
+  $("#bookModal")
+  .data("index", index)
+  .data("workid", book.workId);
+
+$("#modalFavBtn")
+  .attr("data-workid", book.workId);
+
+$("#bookModal").removeClass("hidden");
+}
+
+$(document).on("click", ".book", function () {
+  const index = $(this).data("index");
+  openBookModal(bookList[index], index);
 });
 
 // close modal
@@ -127,6 +161,55 @@ function truncate(text, maxLength) {
     ? text.slice(0, maxLength) + "…"
     : text;
 }
+
+//Search bar logic
+
+$("#searchInput").on("input", function () {
+  const query = $(this).val().toLowerCase().trim(); //clean the input
+  const resultsBox = $("#searchResults");
+
+  resultsBox.empty();
+
+  if (!query) {
+    resultsBox.hide();
+    return;
+  }
+
+  const matches = bookList.filter(book =>
+    book.title.toLowerCase().includes(query) ||
+    book.author.toLowerCase().includes(query)
+  );
+
+  if (matches.length === 0) {
+    resultsBox.hide();
+    return;
+  }
+
+  matches.slice(0, 10).forEach(book => {
+    const index = bookList.indexOf(book);
+
+    resultsBox.append(`
+      <div class="searchItem" data-index="${index}">
+        <strong>${book.title}</strong>
+        <small>${book.author}</small>
+      </div>
+    `);
+  });
+
+  resultsBox.show();
+});
+
+//adding function to the search bar
+$(document).on("click", ".searchItem", function () {
+  const index = $(this).data("index");
+  const book = bookList[index];
+
+  openBookModal(book, index);
+
+  $("#searchResults").hide();
+  $("#searchInput").val("");
+});
+
 
 
   

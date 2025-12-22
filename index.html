@@ -4,11 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>jqLibrary</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" type="text/css">
     <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <H1 id="siteName">jqLibrary</H1>
+    <div id="searchContainer">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search by title or author..."
+        >
+        <div id="searchResults"></div>
+      </div>
+      
     <div id="loader">
         <div class="spinner"></div>
         <p>Loading books…</p>
@@ -23,6 +33,7 @@
           <button class="modal-close">&times;</button>
       
           <div class="modal-body">
+            
             <img id="modalCover" src="" alt="Book cover">
             <div class="modal-text">
               <h2 id="modalTitle"></h2>
@@ -31,7 +42,11 @@
               <p id="modalDescription"></p>
             </div>
           </div>
+          <button id="modalFavBtn" class="fav-btn large">
+            ♡ Add to favorites
+          </button>
         </div>
+        
       </div>
       
 
