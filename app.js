@@ -67,7 +67,7 @@ function createBookElements(shelves, books) {
     
       const coverUrl = book.coverKey
         ? `https://covers.openlibrary.org/b/olid/${book.coverKey}-L.jpg`
-        : "/images/placeHolder.png";
+        : "./images/placeHolder.png";
 
         //data index is there to easily choose what book to choose for the details modal
         shelf.insertAdjacentHTML("beforeend", `
@@ -76,7 +76,7 @@ function createBookElements(shelves, books) {
               <i class="${isFavorite(book.workId) ? "fa-solid" : "fa-regular"} fa-heart"></i> 
             </button>
         
-            <img src="${coverUrl}" onerror="this.src='/images/placeHolder.png'">
+            <img src="${coverUrl}" onerror="this.src='./images/placeHolder.png'">
             <h4>${book.title}</h4>
             <p>${book.author} (${book.year ?? "N/A"})</p>
           </div>
@@ -121,7 +121,7 @@ $(document).on("click", ".fav-btn", function (e) {
 function openBookModal(book, index) {
   const coverUrl = book.coverKey
     ? `https://covers.openlibrary.org/b/olid/${book.coverKey}-L.jpg`
-    : "/images/placeHolder.png";
+    : "./images/placeHolder.png";
 
   $("#modalCover").attr("src", coverUrl);
   $("#modalTitle").text(book.title);

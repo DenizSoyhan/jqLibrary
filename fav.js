@@ -27,7 +27,7 @@ function removeFavorite(workId) {
   function openBookModal(book) {
     const coverUrl = book.coverKey
       ? `https://covers.openlibrary.org/b/olid/${book.coverKey}-L.jpg`
-      : "/images/placeHolder.png";
+      : "./images/placeHolder.png";
   
     $("#modalCover").attr("src", coverUrl);
     $("#modalTitle").text(book.title);
@@ -73,7 +73,7 @@ function renderFavorites() {
   
         const coverUrl = book.coverKey
           ? `https://covers.openlibrary.org/b/olid/${book.coverKey}-L.jpg`
-          : "/images/placeHolder.png";
+          : "./images/placeHolder.png";
   
         shelf.append(`
           <div class="book" data-id="${book.workId}">
