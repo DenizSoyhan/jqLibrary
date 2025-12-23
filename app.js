@@ -4,8 +4,8 @@ let bookList = []
 $.getJSON(
     "https://openlibrary.org/search.json?q=classic&limit=45",
     function (data) {
-      data.docs.slice(0,25).forEach(i =>{
-        console.log(i)      }) 
+      /*data.docs.slice(0,25).forEach(i =>{
+        console.log(i)      }) */
       const books = data.docs.slice(0, 45).map(book => ({
           title: book.title,
           author: book.author_name ? book.author_name[0] : "Unknown",
@@ -29,7 +29,7 @@ $.getJSON(
       //loads everything asyncly
       Promise.all(descriptionPromises).then(() => {
         bookList = books;
-        console.log(bookList);
+        //console.log(bookList);
       });
 
   })
@@ -70,18 +70,18 @@ function createBookElements(shelves, books) {
         : "/images/placeHolder.png";
 
         //data index is there to easily choose what book to choose for the details modal
-      shelf.insertAdjacentHTML("beforeend", `
-          <div class="book" data-index="${bookIndex - 1}" data-workid="${book.workId}">
-    
-          <button class="fav-btn" title="Add to favorites">
-            <i class="fa-regular fa-heart"></i>
-          </button>
-         
-          <img src="${coverUrl}" onerror="this.src='/images/placeHolder.png'">
-          <h4>${book.title}</h4>
-          <p>${book.author} (${book.year ?? "N/A"})</p>
-        </div>
-      `);
+        shelf.insertAdjacentHTML("beforeend", `
+          <div class="book" data-index="${bookIndex - 1}">
+            <button class="fav-btn" data-index="${bookIndex - 1}">
+              <i class="${isFavorite(book.workId) ? "fa-solid" : "fa-regular"} fa-heart"></i> 
+            </button>
+        
+            <img src="${coverUrl}" onerror="this.src='/images/placeHolder.png'">
+            <h4>${book.title}</h4>
+            <p>${book.author} (${book.year ?? "N/A"})</p>
+          </div>
+        `);
+        
     }
   });
   
@@ -106,14 +106,15 @@ function getBookDescription(book) {
 //FAV button logic
 
 $(document).on("click", ".fav-btn", function (e) {
-  e.stopPropagation(); // prevents opening modal I can't be bothered for another solution
+  e.stopPropagation();
 
-  const workId = $(this).closest(".book").data("workid");
-  console.log("Favorite clicked:", workId);
+  const index = $(this).data("index");
+  const book = bookList[index];
 
-  // TODO: add fav button logic and use local storage 
-
+  toggleFavorite(book);
+  updateAllFavoriteIcons(book.workId);
 });
+
 
 //MODAL LOGIC
 
@@ -134,12 +135,13 @@ function openBookModal(book, index) {
       : "Loading description…"
   );
 
+  
+
   $("#bookModal")
   .data("index", index)
   .data("workid", book.workId);
 
-$("#modalFavBtn")
-  .attr("data-workid", book.workId);
+  updateAllFavoriteIcons(book.workId);
 
 $("#bookModal").removeClass("hidden");
 }
@@ -210,6 +212,66 @@ $(document).on("click", ".searchItem", function () {
   $("#searchInput").val("");
 });
 
+//favorite logic
 
+const FAVORITES_KEY = "favoriteBooks";
 
-  
+function getFavorites() {
+  return JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+}
+
+function saveFavorites(favs) {
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(favs));
+}
+
+function isFavorite(workId) {
+  return getFavorites().some(book => book.workId === workId);
+}
+
+function toggleFavorite(book) {
+  let favs = getFavorites();
+
+  const existingIndex = favs.findIndex(b => b.workId === book.workId);
+
+  if (existingIndex !== -1) {
+    // remove from favorites
+    favs.splice(existingIndex, 1);
+  } else {
+// storing the whole object to show in favorites
+    favs.push({
+      title: book.title,
+      author: book.author,
+      year: book.year,
+      workId: book.workId,
+      coverKey: book.coverKey,
+      description: book.description
+    });
+  }
+
+  saveFavorites(favs);
+}
+
+$("#modalFavBtn").on("click", function () {
+  const index = $("#bookModal").data("index");
+  const book = bookList[index];
+
+  toggleFavorite(book);
+  updateAllFavoriteIcons(book.workId);
+});
+
+function updateAllFavoriteIcons(workId) {
+  const isFav = isFavorite(workId);
+
+  // update all book cards
+  $(".book").each(function () {
+    const index = $(this).data("index");
+    if (bookList[index].workId === workId) {
+      $(this).find(".fav-btn i")
+        .attr("class", isFav ? "fa-solid fa-heart" : "fa-regular fa-heart");
+    }
+  });
+
+  // update modal heart
+  $("#modalFavBtn i")
+    .attr("class", isFav ? "fa-solid fa-heart" : "fa-regular fa-heart");
+}
